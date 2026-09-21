@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Send, CheckCircle2, User, Phone, Mail, Car, HelpCircle, MessageSquare } from "lucide-react";
+import { Send, CheckCircle2, User, Phone, Mail, Car, HelpCircle, MessageSquare, AlertCircle } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/Icons";
 import { createWhatsAppLink } from "@/lib/utils";
 
@@ -35,17 +35,14 @@ export function ContactForm() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Error al enviar la solicitud.");
+        setErrorMessage(data.message || "Error al enviar la solicitud. Revisa los datos ingresados.");
+        return;
       }
 
       setRequestId(data.referenceId || `ZRPM-SOL-${Math.floor(100000 + Math.random() * 900000)}`);
       setIsSubmitted(true);
-    } catch (err: any) {
-      // Fallback: still let the user proceed via WhatsApp if network failed
-      setErrorMessage(err.message || "Error de conexión. Puedes contactarnos directamente por WhatsApp.");
-      const fallbackId = `ZRPM-SOL-${Math.floor(100000 + Math.random() * 900000)}`;
-      setRequestId(fallbackId);
-      setIsSubmitted(true);
+    } catch {
+      setErrorMessage("Error de conexión al enviar el formulario. Puedes contactarnos directamente por WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }
@@ -135,6 +132,13 @@ Hola ZRPM Racing Engine, quisiera coordinar una respuesta o turno para esta soli
               Completa el formulario y te responderemos con asesoría técnica para tu proyecto.
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-start gap-2.5 mb-4">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

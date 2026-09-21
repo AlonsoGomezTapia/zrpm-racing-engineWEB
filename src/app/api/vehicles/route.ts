@@ -9,12 +9,13 @@ import {
 } from "@/lib/data/vehicles";
 import { getProductCountForGeneration } from "@/lib/data/products";
 import { prisma } from "@/lib/prisma";
+import { sanitizeInput } from "@/lib/security";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  const makeParam = searchParams.get("make");
-  const generationId = searchParams.get("id");
+  const makeParam = sanitizeInput(searchParams.get("make") || "").slice(0, 50) || null;
+  const generationId = sanitizeInput(searchParams.get("id") || "").slice(0, 80) || null;
 
   try {
     if (generationId) {

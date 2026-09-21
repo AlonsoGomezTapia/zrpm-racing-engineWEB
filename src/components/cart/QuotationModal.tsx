@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, CheckCircle2, Send, FileText, Building2, User, Phone, Mail, MapPin } from "lucide-react";
+import { X, CheckCircle2, Send, FileText, Building2, User, Phone, Mail, MapPin, AlertCircle } from "lucide-react";
 import { CartItem } from "@/types";
-import { formatCLP, createWhatsAppLink } from "@/lib/utils";
+import { formatCLP, createWhatsAppLink, validateChileanRut } from "@/lib/utils";
 import { WhatsAppIcon } from "@/components/ui/Icons";
 
 interface QuotationModalProps {
@@ -37,24 +37,34 @@ export function QuotationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [quoteId, setQuoteId] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const isRutInvalid = Boolean(formData.rut && formData.rut.trim().length > 3 && !validateChileanRut(formData.rut));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
+    if (formData.rut && formData.rut.trim() && !validateChileanRut(formData.rut)) {
+      setFormError("El RUT ingresado no es válido (formato: 12.345.678-9 con dígito verificador correcto).");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const payload = {
         name: formData.name,
-        rut: formData.rut || undefined,
-        phone: formData.phone,
-        email: formData.email,
-        city: formData.city,
+        rut: formData.rut ? formData.rut.trim() : undefined,
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        city: formData.city.trim(),
         items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
         deliveryMethod,
         wantsInstallation,
-        vehicleNotes: formData.additionalNotes || undefined,
+        vehicleNotes: formData.additionalNotes ? formData.additionalNotes.trim() : undefined,
       };
 
       const res = await fetch("/api/quotes", {
@@ -65,15 +75,14 @@ export function QuotationModal({
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Error al generar cotización.");
+        setFormError(data.message || "Error al procesar la cotización. Revisa los datos ingresados.");
+        return;
       }
 
       setQuoteId(data.quoteId || `ZRPM-COT-${Math.floor(100000 + Math.random() * 900000)}`);
       setIsSubmitted(true);
-    } catch (err: any) {
-      const fallbackId = `ZRPM-COT-${Math.floor(100000 + Math.random() * 900000)}`;
-      setQuoteId(fallbackId);
-      setIsSubmitted(true);
+    } catch {
+      setFormError("Error de conexión con el servidor. Puedes contactarnos directamente por WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }
@@ -179,6 +188,15 @@ ${items
               </p>
             </div>
 
+            {formError && (
+              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-start gap-2.5 mb-4">
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span>{formError}</span>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Name */}
@@ -211,9 +229,18 @@ ${items
                       placeholder="12.345.678-9"
                       value={formData.rut}
                       onChange={(e) => setFormData({ ...formData, rut: e.target.value })}
-                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-red-500 transition-colors"
+                      className={`w-full bg-neutral-950 border rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-neutral-600 focus:outline-none transition-colors ${
+                        isRutInvalid
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-neutral-800 focus:border-red-500"
+                      }`}
                     />
                   </div>
+                  {isRutInvalid && (
+                    <span className="text-[10px] font-mono text-red-400 mt-1 block">
+                      RUT chileno inválido (revisa el dígito verificador)
+                    </span>
+                  )}
                 </div>
 
                 {/* Phone */}

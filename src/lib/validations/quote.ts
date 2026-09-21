@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { validateChileanRut } from "@/lib/utils";
+import { sanitizeInput } from "@/lib/security";
 
 export const quoteItemSchema = z.object({
-  productId: z.string({ required_error: "ID de producto requerido" }),
+  productId: z
+    .string({ required_error: "ID de producto requerido" })
+    .transform(sanitizeInput)
+    .pipe(z.string().min(1).max(100)),
   quantity: z
     .number({ required_error: "Cantidad requerida" })
     .int("La cantidad debe ser un número entero")
@@ -13,13 +17,17 @@ export const quoteItemSchema = z.object({
 export const quoteRequestSchema = z.object({
   name: z
     .string({ required_error: "El nombre es obligatorio" })
-    .trim()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(100, "El nombre no puede superar los 100 caracteres"),
+    .transform(sanitizeInput)
+    .pipe(
+      z
+        .string()
+        .min(2, "El nombre debe tener al menos 2 caracteres válidos")
+        .max(100, "El nombre no puede superar los 100 caracteres")
+    ),
 
   rut: z
     .string()
-    .trim()
+    .transform(sanitizeInput)
     .optional()
     .refine(
       (val) => {
@@ -33,33 +41,50 @@ export const quoteRequestSchema = z.object({
 
   phone: z
     .string({ required_error: "El teléfono es obligatorio" })
-    .trim()
-    .min(8, "Ingresa un número telefónico válido (+56 9 ...)")
-    .max(25, "El teléfono es demasiado largo"),
+    .transform(sanitizeInput)
+    .pipe(
+      z
+        .string()
+        .min(8, "Ingresa un número telefónico válido (+56 9 ...)")
+        .max(25, "El teléfono es demasiado largo")
+    ),
 
   email: z
     .string({ required_error: "El correo electrónico es obligatorio" })
     .trim()
+    .toLowerCase()
     .email("Ingresa un correo electrónico válido")
     .max(120, "El correo no puede superar los 120 caracteres"),
 
   city: z
     .string({ required_error: "La ciudad o comuna es obligatoria" })
-    .trim()
-    .min(2, "Indica ciudad o comuna de despacho")
-    .max(100, "La ciudad no puede superar los 100 caracteres"),
+    .transform(sanitizeInput)
+    .pipe(
+      z
+        .string()
+        .min(2, "Indica ciudad o comuna de despacho")
+        .max(100, "La ciudad no puede superar los 100 caracteres")
+    ),
 
   items: z
     .array(quoteItemSchema, {
       required_error: "El carro debe contener al menos un producto",
     })
-    .min(1, "Debes incluir al menos un producto para cotizar"),
+    .min(1, "Debes incluir al menos un producto para cotizar")
+    .max(50, "No se pueden incluir más de 50 ítems distintos por cotización"),
 
-  deliveryMethod: z.string().default("Retiro en Taller ZRPM (La Cisterna)"),
+  deliveryMethod: z
+    .string()
+    .transform(sanitizeInput)
+    .default("Retiro en Taller ZRPM (La Cisterna)"),
 
   wantsInstallation: z.boolean().default(false),
 
-  vehicleNotes: z.string().max(2000).optional(),
+  vehicleNotes: z
+    .string()
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val) : undefined))
+    .pipe(z.string().max(2000).optional()),
 });
 
 export type QuoteItemData = z.infer<typeof quoteItemSchema>;

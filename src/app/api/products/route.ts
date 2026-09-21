@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PRODUCTS } from "@/lib/data/products";
 import { prisma } from "@/lib/prisma";
+import { sanitizeInput } from "@/lib/security";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  const category = searchParams.get("category");
-  const brand = searchParams.get("brand");
-  const generation = searchParams.get("generation") || searchParams.get("generacion");
-  const search = searchParams.get("search");
+  const category = sanitizeInput(searchParams.get("category") || "").slice(0, 100) || null;
+  const brand = sanitizeInput(searchParams.get("brand") || "").slice(0, 100) || null;
+  const generation = sanitizeInput(searchParams.get("generation") || searchParams.get("generacion") || "").slice(0, 100) || null;
+  const search = sanitizeInput(searchParams.get("search") || "").slice(0, 100) || null;
   const inStockOnly = searchParams.get("inStock") === "true";
-  const sku = searchParams.get("sku");
-  const sort = searchParams.get("sort") || "featured";
+  const sku = sanitizeInput(searchParams.get("sku") || "").slice(0, 100) || null;
+  const rawSort = sanitizeInput(searchParams.get("sort") || "featured").slice(0, 30);
+  const sort = ["featured", "price-asc", "price-desc", "name"].includes(rawSort) ? rawSort : "featured";
 
   try {
     // 1. Query Prisma database

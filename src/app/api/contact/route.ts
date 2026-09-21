@@ -1,9 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+    const rateCheck = checkRateLimit(`contact:${ip}`, 10, 60);
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Has excedido el límite de solicitudes de contacto. Por favor espera ${rateCheck.resetSeconds} segundos.`,
+        },
+        { status: 429, headers: { "Retry-After": String(rateCheck.resetSeconds) } }
+      );
+    }
+
     const body = await req.json();
     const result = contactFormSchema.safeParse(body);
 

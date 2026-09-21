@@ -2,9 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { quoteRequestSchema } from "@/lib/validations/quote";
 import { PRODUCTS } from "@/lib/data/products";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+    const rateCheck = checkRateLimit(`quotes:${ip}`, 10, 60);
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Has excedido el límite de solicitudes de cotización. Por favor espera ${rateCheck.resetSeconds} segundos.`,
+        },
+        { status: 429, headers: { "Retry-After": String(rateCheck.resetSeconds) } }
+      );
+    }
+
     const body = await req.json();
     const result = quoteRequestSchema.safeParse(body);
 
