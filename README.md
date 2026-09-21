@@ -9,7 +9,7 @@ Plataforma web de alto rendimiento y comercio técnico desarrollada a medida par
 
 ---
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 * **Framework:** Next.js 15 (App Router, Server & Client Components, SSG pre-rendering).
 * **Lenguaje:** TypeScript 5.8 (modo estricto).
@@ -22,7 +22,7 @@ Plataforma web de alto rendimiento y comercio técnico desarrollada a medida par
 
 ---
 
-## 🚗 Flota Vehicular ZRPM (100% Fotografía Real)
+##  Flota Vehicular ZRPM (100% Fotografía Real)
 
 La plataforma cuenta con 12 plataformas automotrices con fotografías tomadas directamente en el taller y pistas de competición:
 
@@ -41,7 +41,7 @@ La plataforma cuenta con 12 plataformas automotrices con fotografías tomadas di
 
 ---
 
-## 🏁 Características Principales
+##  Características Principales
 
 * **Buscador de Vehículos & Garaje Virtual:** Wizard interactivo de 3 pasos (Marca > Modelo > Versión) que guarda el vehículo del usuario en el navegador y filtra automáticamente las piezas compatibles.
 * **Catálogo Técnico con Filtros Reactivos:** Búsqueda en tiempo real por texto, marca de competición (Hellion, Whipple, Roush, Steeda, Brembo, JLT, NGK), categoría de modificación y generación vehicular.
@@ -55,7 +55,7 @@ La plataforma cuenta con 12 plataformas automotrices con fotografías tomadas di
 
 ---
 
-## 💻 Scripts Disponibles
+##  Scripts Disponibles
 
 ```bash
 # Iniciar servidor de desarrollo
@@ -82,7 +82,7 @@ pnpm run db:studio
 
 ---
 
-## 🚀 Despliegue en Producción
+##  Despliegue en Producción
 
 ### Opción A: Vercel (Recomendada para Serverless)
 1. Conectar el repositorio de GitHub en Vercel.
