@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 8 8 10;
+    --foreground: 245 245 247;
+    --card: 18 18 21;
+    --card-foreground: 245 245 247;
+    --popover: 18 18 21;
+    --popover-foreground: 245 245 247;
+    --primary: 239 35 60;
+    --primary-foreground: 255 255 255;
+    --border: 36 36 42;
+    --input: 36 36 42;
+    --ring: 239 35 60;
+  }
+
+  body {
+    @apply bg-[#08080A] text-[#F3F4F6] antialiased selection:bg-[#EF233C] selection:text-white;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+  }
+}
+
+/* Custom motorsport scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #08080A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #24242A;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #EF233C;
+}

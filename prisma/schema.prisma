@@ -1,0 +1,139 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model VehicleMake {
+  id      String         @id
+  name    String
+  slug    String         @unique
+  country String
+  logoUrl String?
+  models  VehicleModel[]
+}
+
+model VehicleModel {
+  id          String              @id
+  name        String
+  slug        String
+  makeId      String
+  make        VehicleMake         @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  generations VehicleGeneration[]
+}
+
+model VehicleGeneration {
+  id          String       @id
+  name        String
+  slug        String       @unique
+  startYear   Int
+  endYear     Int?
+  chassisCode String
+  platform    String
+  imageUrl    String
+  modelId     String
+  model       VehicleModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+}
+
+model Brand {
+  id                    String    @id
+  name                  String
+  slug                  String    @unique
+  description           String?
+  country               String
+  logoUrl               String?
+  isOfficialDistributor Boolean   @default(false)
+  products              Product[]
+}
+
+model Category {
+  id             String    @id
+  name           String
+  slug           String    @unique
+  description    String
+  iconName       String
+  imageUrl       String
+  carModel       String?
+  isPopularBadge String?
+  products       Product[]
+}
+
+model Product {
+  id                    String      @id
+  sku                   String      @unique
+  name                  String
+  slug                  String      @unique
+  brandId               String
+  brand                 Brand       @relation(fields: [brandId], references: [id])
+  categoryId            String
+  category              Category    @relation(fields: [categoryId], references: [id])
+  priceCLP              Int
+  originalPriceCLP      Int?
+  isOnSale              Boolean     @default(false)
+  stock                 Int         @default(0)
+  availability          String      @default("in_stock")
+  estimatedDeliveryDays Int         @default(1)
+  shortDescription      String
+  description           String
+  specifications        String
+  images                String
+  compatibleGenerations String
+  isFeatured            Boolean     @default(false)
+  isPopular             Boolean     @default(false)
+  quoteItems            QuoteItem[]
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+}
+
+model ContactRequest {
+  id            String   @id @default(cuid())
+  referenceId   String   @unique
+  fullName      String
+  rut           String?
+  email         String
+  phone         String
+  vehicle       String?
+  serviceType   String
+  message       String
+  preferredDate String?
+  status        String   @default("PENDING")
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Quote {
+  id             String      @id @default(cuid())
+  quoteId        String      @unique
+  rut            String
+  fullName       String
+  email          String
+  phone          String
+  city           String?
+  deliveryMethod String
+  address        String?
+  notes          String?
+  subtotalCLP    Int
+  ivaCLP         Int
+  totalCLP       Int
+  status         String      @default("PENDING")
+  items          QuoteItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model QuoteItem {
+  id           String   @id @default(cuid())
+  quoteId      String
+  quote        Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId    String?
+  product      Product? @relation(fields: [productId], references: [id])
+  sku          String
+  name         String
+  unitPriceCLP Int
+  quantity     Int
+  lineTotalCLP Int
+}
