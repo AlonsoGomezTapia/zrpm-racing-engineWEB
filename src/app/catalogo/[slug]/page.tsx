@@ -97,10 +97,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 pb-20">
       {/* JSON-LD Script */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json">
+        {JSON.stringify(jsonLd)}
+      </script>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Breadcrumb navigation */}
